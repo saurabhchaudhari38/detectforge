@@ -1,0 +1,23 @@
+id: DF-LNX-005
+title: Local user account created
+status: stable
+description: A new local account was created with useradd/adduser.
+author: detectforge
+severity: medium
+tags: [attack.persistence, attack.t1136.001]
+logsource: {product: linux, service: auth}
+detection:
+  user_created:
+    event.action: user_created
+  condition: user_created
+falsepositives:
+  - Provisioning by configuration management (filter by parent process or host group)
+tests:
+  - name: useradd fires
+    expect: 1
+    events:
+      - {"@timestamp": "2026-10-12T08:12:02Z", event: {action: user_created}, user: {target: {name: sysupdate, id: 1001}}}
+  - name: unrelated event does not fire
+    expect: 0
+    events:
+      - {"@timestamp": "2026-10-12T08:12:02Z", event: {action: ssh_login, outcome: success}}

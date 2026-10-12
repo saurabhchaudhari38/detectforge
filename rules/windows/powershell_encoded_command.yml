@@ -1,0 +1,32 @@
+id: DF-WIN-001
+title: PowerShell launched with an encoded command
+status: stable
+description: >
+  PowerShell started with -EncodedCommand (or an abbreviation of it). Base64 encoding
+  hides the real script from command-line logging and simple string matching.
+author: detectforge
+severity: high
+tags: [attack.execution, attack.defense_evasion, attack.t1059.001, attack.t1027]
+logsource: {category: process_creation, product: windows}
+detection:
+  powershell:
+    - process.name: [powershell.exe, pwsh.exe]
+    - process.pe.original_file_name: [PowerShell.EXE, pwsh.dll]
+  encoded_flag:
+    process.command_line|re: '\s[-/]e(c|nc|nco|ncod|ncode|ncoded|ncodedc|ncodedco|ncodedcom|ncodedcomm|ncodedcomma|ncodedcomman|ncodedcommand)?\s+[A-Za-z0-9+/=]{20,}'
+  condition: powershell and encoded_flag
+falsepositives:
+  - Some management agents (SCCM, Intune) use encoded commands; filter by parent process
+tests:
+  - name: -enc with base64 payload fires
+    expect: 1
+    events:
+      - {"@timestamp": "2026-10-12T10:00:00Z", process: {name: powershell.exe, command_line: "powershell.exe -NoP -W Hidden -enc SQBFAFgAIAAoAE4AZQB3AC0ATwBiAGoAZQBjAHQA"}}
+  - name: -EncodedCommand with uppercase binary name fires
+    expect: 1
+    events:
+      - {"@timestamp": "2026-10-12T10:00:00Z", process: {name: POWERSHELL.EXE, command_line: "POWERSHELL.EXE -EncodedCommand SQBFAFgAIAAoAE4AZQB3AC0ATwBiAGoAZQBjAHQA"}}
+  - name: -ExecutionPolicy is not mistaken for -e
+    expect: 0
+    events:
+      - {"@timestamp": "2026-10-12T10:00:00Z", process: {name: powershell.exe, command_line: "powershell.exe -ExecutionPolicy Bypass -File C:\\scripts\\backup.ps1"}}

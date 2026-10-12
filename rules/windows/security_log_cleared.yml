@@ -1,0 +1,34 @@
+id: DF-WIN-004
+title: Windows event log cleared
+status: stable
+description: >
+  The Security log (event 1102) or System log (event 104) was cleared. Attackers clear
+  logs to remove evidence; administrators rarely need to.
+author: detectforge
+severity: high
+tags: [attack.defense_evasion, attack.t1070.001]
+logsource: {product: windows, service: security}
+detection:
+  security_cleared:
+    event.code: 1102
+    event.provider: Microsoft-Windows-Eventlog
+  system_cleared:
+    event.code: 104
+    event.provider: Microsoft-Windows-Eventlog
+  wevtutil:
+    process.name: wevtutil.exe
+    process.command_line|re: '\s(cl|clear-log)\s'
+  condition: 1 of them
+tests:
+  - name: event 1102 fires
+    expect: 1
+    events:
+      - {"@timestamp": "2026-10-12T10:30:00Z", event: {code: "1102", provider: Microsoft-Windows-Eventlog}}
+  - name: wevtutil cl fires
+    expect: 1
+    events:
+      - {"@timestamp": "2026-10-12T10:30:00Z", process: {name: wevtutil.exe, command_line: "wevtutil.exe cl Security"}}
+  - name: wevtutil query does not fire
+    expect: 0
+    events:
+      - {"@timestamp": "2026-10-12T10:30:00Z", process: {name: wevtutil.exe, command_line: "wevtutil.exe qe Security /c:5"}}

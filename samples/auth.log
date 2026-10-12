@@ -1,0 +1,33 @@
+Oct 12 08:00:01 web01 sshd[1001]: Accepted publickey for alice from 10.0.0.15 port 51022 ssh2: ED25519 SHA256:Zk3p9xQv2c
+Oct 12 08:00:01 web01 sshd[1001]: pam_unix(sshd:session): session opened for user alice(uid=1000) by (uid=0)
+Oct 12 08:02:10 web01 sudo:    alice : TTY=pts/0 ; PWD=/home/alice ; USER=root ; COMMAND=/usr/bin/systemctl restart nginx
+Oct 12 08:05:00 web01 sshd[1100]: Failed password for alice from 10.0.0.15 port 51100 ssh2
+Oct 12 08:05:04 web01 sshd[1100]: Accepted password for alice from 10.0.0.15 port 51100 ssh2
+Oct 12 08:10:00 web01 sshd[1201]: Failed password for deploy from 203.0.113.50 port 40001 ssh2
+Oct 12 08:10:05 web01 sshd[1202]: Failed password for deploy from 203.0.113.50 port 40002 ssh2
+Oct 12 08:10:10 web01 sshd[1203]: Failed password for deploy from 203.0.113.50 port 40003 ssh2
+Oct 12 08:10:15 web01 sshd[1204]: Failed password for deploy from 203.0.113.50 port 40004 ssh2
+Oct 12 08:10:20 web01 sshd[1205]: Failed password for deploy from 203.0.113.50 port 40005 ssh2
+Oct 12 08:10:25 web01 sshd[1206]: Failed password for deploy from 203.0.113.50 port 40006 ssh2
+Oct 12 08:10:30 web01 sshd[1207]: Failed password for deploy from 203.0.113.50 port 40007 ssh2
+Oct 12 08:10:35 web01 sshd[1208]: Failed password for deploy from 203.0.113.50 port 40008 ssh2
+Oct 12 08:10:45 web01 sshd[1210]: Accepted password for deploy from 203.0.113.50 port 40010 ssh2
+Oct 12 08:10:45 web01 sshd[1210]: pam_unix(sshd:session): session opened for user deploy(uid=1002) by (uid=0)
+Oct 12 08:11:30 web01 sudo:   deploy : TTY=pts/1 ; PWD=/home/deploy ; USER=root ; COMMAND=/bin/bash
+Oct 12 08:12:02 web01 useradd[1302]: new user: name=sysupdate, UID=0, GID=0, home=/home/sysupdate, shell=/bin/bash, from=/dev/pts/1
+Oct 12 08:30:00 web01 CRON[1350]: pam_unix(cron:session): session opened for user root(uid=0) by (uid=0)
+Oct 12 09:00:00 web01 sshd[1400]: Invalid user oracle from 198.51.100.23 port 33001
+Oct 12 09:00:00 web01 sshd[1400]: Failed password for invalid user oracle from 198.51.100.23 port 33001 ssh2
+Oct 12 09:00:40 web01 sshd[1401]: Invalid user postgres from 198.51.100.23 port 33002
+Oct 12 09:00:40 web01 sshd[1401]: Failed password for invalid user postgres from 198.51.100.23 port 33002 ssh2
+Oct 12 09:01:20 web01 sshd[1402]: Invalid user ubuntu from 198.51.100.23 port 33003
+Oct 12 09:01:20 web01 sshd[1402]: Failed password for invalid user ubuntu from 198.51.100.23 port 33003 ssh2
+Oct 12 09:02:00 web01 sshd[1403]: Invalid user admin from 198.51.100.23 port 33004
+Oct 12 09:02:00 web01 sshd[1403]: Failed password for invalid user admin from 198.51.100.23 port 33004 ssh2
+Oct 12 09:02:40 web01 sshd[1404]: Invalid user git from 198.51.100.23 port 33005
+Oct 12 09:02:40 web01 sshd[1404]: Failed password for invalid user git from 198.51.100.23 port 33005 ssh2
+Oct 12 09:03:20 web01 sshd[1405]: Invalid user jenkins from 198.51.100.23 port 33006
+Oct 12 09:03:20 web01 sshd[1405]: Failed password for invalid user jenkins from 198.51.100.23 port 33006 ssh2
+Oct 12 09:04:00 web01 sshd[1406]: Invalid user test from 198.51.100.23 port 33007
+Oct 12 09:04:00 web01 sshd[1406]: Failed password for invalid user test from 198.51.100.23 port 33007 ssh2
+Oct 12 09:10:00 web01 sshd[1500]: Accepted publickey for bob from 10.0.0.22 port 52000 ssh2: RSA SHA256:Qm81zLs0

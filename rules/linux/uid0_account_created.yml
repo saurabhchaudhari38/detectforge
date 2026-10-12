@@ -1,0 +1,26 @@
+id: DF-LNX-006
+title: Account created with UID 0
+status: stable
+description: >
+  A new account was created with UID 0, making it a second root account. Legitimate
+  provisioning almost never does this; it is a classic backdoor.
+author: detectforge
+severity: critical
+tags: [attack.persistence, attack.privilege_escalation, attack.t1136.001, attack.t1078.003]
+logsource: {product: linux, service: auth}
+detection:
+  user_created:
+    event.action: user_created
+    user.target.id: 0
+  condition: user_created
+falsepositives:
+  - None expected
+tests:
+  - name: UID 0 account fires
+    expect: 1
+    events:
+      - {"@timestamp": "2026-10-12T08:12:02Z", event: {action: user_created}, user: {target: {name: sysupdate, id: 0}}}
+  - name: normal UID does not fire
+    expect: 0
+    events:
+      - {"@timestamp": "2026-10-12T08:12:02Z", event: {action: user_created}, user: {target: {name: bob, id: 1002}}}

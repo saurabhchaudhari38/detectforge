@@ -1,0 +1,33 @@
+id: DF-WIN-003
+title: LSASS memory dump attempt
+status: stable
+description: >
+  A command line that dumps the memory of lsass.exe, which holds credential material.
+  Covers procdump, the comsvcs.dll MiniDump export and common dumping tools.
+author: detectforge
+severity: critical
+tags: [attack.credential_access, attack.t1003.001]
+logsource: {category: process_creation, product: windows}
+detection:
+  procdump:
+    process.command_line|contains|all: [procdump, lsass]
+  comsvcs:
+    process.command_line|contains|all: [comsvcs, minidump]
+  tools:
+    process.command_line|contains: ['sekurlsa::', 'nanodump', 'lsassy']
+  condition: 1 of them
+falsepositives:
+  - Crash-dump collection by support staff (rare; confirm with the requester)
+tests:
+  - name: procdump against lsass fires
+    expect: 1
+    events:
+      - {"@timestamp": "2026-10-12T10:10:00Z", process: {name: procdump64.exe, command_line: "procdump64.exe -accepteula -ma lsass.exe C:\\Temp\\l.dmp"}}
+  - name: comsvcs MiniDump fires
+    expect: 1
+    events:
+      - {"@timestamp": "2026-10-12T10:10:00Z", process: {name: rundll32.exe, command_line: "rundll32.exe C:\\Windows\\System32\\comsvcs.dll, MiniDump 652 C:\\Temp\\out.dmp full"}}
+  - name: procdump on another process does not fire
+    expect: 0
+    events:
+      - {"@timestamp": "2026-10-12T10:10:00Z", process: {name: procdump64.exe, command_line: "procdump64.exe -ma w3wp.exe C:\\Temp\\iis.dmp"}}

@@ -1,0 +1,64 @@
+id: DF-LNX-003
+title: Successful SSH login after brute force
+status: stable
+description: >
+  A source IP produces five or more failed SSH logins and then authenticates successfully
+  within ten minutes. This is the point where a noisy brute force becomes a compromise.
+author: detectforge
+severity: critical
+tags: [attack.credential_access, attack.initial_access, attack.t1110, attack.t1078]
+logsource: {product: linux, service: sshd}
+type: sequence
+detection:
+  failed_login:
+    event.action: ssh_login
+    event.outcome: failure
+  successful_login:
+    event.action: ssh_login
+    event.outcome: success
+sequence:
+  window: 10m
+  group_by: [source.ip]
+  steps:
+    - condition: failed_login
+      count: 5
+    - condition: successful_login
+falsepositives:
+  - A user who forgot their password and finally typed it correctly from a fixed IP
+tests:
+  - name: failures followed by success fire
+    expect: 1
+    events:
+      - {"@timestamp": "2026-10-12T08:10:00Z", event: {action: ssh_login, outcome: failure}, source: {ip: 203.0.113.50}}
+      - {"@timestamp": "2026-10-12T08:10:05Z", event: {action: ssh_login, outcome: failure}, source: {ip: 203.0.113.50}}
+      - {"@timestamp": "2026-10-12T08:10:10Z", event: {action: ssh_login, outcome: failure}, source: {ip: 203.0.113.50}}
+      - {"@timestamp": "2026-10-12T08:10:15Z", event: {action: ssh_login, outcome: failure}, source: {ip: 203.0.113.50}}
+      - {"@timestamp": "2026-10-12T08:10:20Z", event: {action: ssh_login, outcome: failure}, source: {ip: 203.0.113.50}}
+      - {"@timestamp": "2026-10-12T08:10:45Z", event: {action: ssh_login, outcome: success}, source: {ip: 203.0.113.50}}
+  - name: success before failures does not fire
+    expect: 0
+    events:
+      - {"@timestamp": "2026-10-12T08:09:00Z", event: {action: ssh_login, outcome: success}, source: {ip: 203.0.113.50}}
+      - {"@timestamp": "2026-10-12T08:10:00Z", event: {action: ssh_login, outcome: failure}, source: {ip: 203.0.113.50}}
+      - {"@timestamp": "2026-10-12T08:10:05Z", event: {action: ssh_login, outcome: failure}, source: {ip: 203.0.113.50}}
+      - {"@timestamp": "2026-10-12T08:10:10Z", event: {action: ssh_login, outcome: failure}, source: {ip: 203.0.113.50}}
+      - {"@timestamp": "2026-10-12T08:10:15Z", event: {action: ssh_login, outcome: failure}, source: {ip: 203.0.113.50}}
+      - {"@timestamp": "2026-10-12T08:10:20Z", event: {action: ssh_login, outcome: failure}, source: {ip: 203.0.113.50}}
+  - name: success from a different IP does not fire
+    expect: 0
+    events:
+      - {"@timestamp": "2026-10-12T08:10:00Z", event: {action: ssh_login, outcome: failure}, source: {ip: 203.0.113.50}}
+      - {"@timestamp": "2026-10-12T08:10:05Z", event: {action: ssh_login, outcome: failure}, source: {ip: 203.0.113.50}}
+      - {"@timestamp": "2026-10-12T08:10:10Z", event: {action: ssh_login, outcome: failure}, source: {ip: 203.0.113.50}}
+      - {"@timestamp": "2026-10-12T08:10:15Z", event: {action: ssh_login, outcome: failure}, source: {ip: 203.0.113.50}}
+      - {"@timestamp": "2026-10-12T08:10:20Z", event: {action: ssh_login, outcome: failure}, source: {ip: 203.0.113.50}}
+      - {"@timestamp": "2026-10-12T08:10:45Z", event: {action: ssh_login, outcome: success}, source: {ip: 10.0.0.15}}
+  - name: success after the window expires does not fire
+    expect: 0
+    events:
+      - {"@timestamp": "2026-10-12T08:10:00Z", event: {action: ssh_login, outcome: failure}, source: {ip: 203.0.113.50}}
+      - {"@timestamp": "2026-10-12T08:10:05Z", event: {action: ssh_login, outcome: failure}, source: {ip: 203.0.113.50}}
+      - {"@timestamp": "2026-10-12T08:10:10Z", event: {action: ssh_login, outcome: failure}, source: {ip: 203.0.113.50}}
+      - {"@timestamp": "2026-10-12T08:10:15Z", event: {action: ssh_login, outcome: failure}, source: {ip: 203.0.113.50}}
+      - {"@timestamp": "2026-10-12T08:10:20Z", event: {action: ssh_login, outcome: failure}, source: {ip: 203.0.113.50}}
+      - {"@timestamp": "2026-10-12T08:45:00Z", event: {action: ssh_login, outcome: success}, source: {ip: 203.0.113.50}}

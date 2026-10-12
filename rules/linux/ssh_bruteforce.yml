@@ -1,0 +1,50 @@
+id: DF-LNX-001
+title: SSH brute force from a single source
+status: stable
+description: >
+  Five or more failed SSH logins from one source IP within 60 seconds. Indicates
+  automated password guessing against exposed SSH.
+author: detectforge
+severity: medium
+tags: [attack.credential_access, attack.t1110.001]
+logsource: {product: linux, service: sshd}
+type: threshold
+detection:
+  failed_login:
+    event.action: ssh_login
+    event.outcome: failure
+  condition: failed_login
+threshold:
+  count: 5
+  window: 60s
+  group_by: [source.ip]
+falsepositives:
+  - Automation retrying with a rotated or stale credential
+references:
+  - https://attack.mitre.org/techniques/T1110/001/
+tests:
+  - name: five failures inside the window fire once
+    expect: 1
+    events:
+      - {"@timestamp": "2026-10-12T08:00:00Z", event: {action: ssh_login, outcome: failure}, source: {ip: 203.0.113.5}}
+      - {"@timestamp": "2026-10-12T08:00:05Z", event: {action: ssh_login, outcome: failure}, source: {ip: 203.0.113.5}}
+      - {"@timestamp": "2026-10-12T08:00:10Z", event: {action: ssh_login, outcome: failure}, source: {ip: 203.0.113.5}}
+      - {"@timestamp": "2026-10-12T08:00:15Z", event: {action: ssh_login, outcome: failure}, source: {ip: 203.0.113.5}}
+      - {"@timestamp": "2026-10-12T08:00:20Z", event: {action: ssh_login, outcome: failure}, source: {ip: 203.0.113.5}}
+      - {"@timestamp": "2026-10-12T08:00:25Z", event: {action: ssh_login, outcome: failure}, source: {ip: 203.0.113.5}}
+  - name: slow failures spread beyond the window do not fire
+    expect: 0
+    events:
+      - {"@timestamp": "2026-10-12T08:00:00Z", event: {action: ssh_login, outcome: failure}, source: {ip: 203.0.113.5}}
+      - {"@timestamp": "2026-10-12T08:00:30Z", event: {action: ssh_login, outcome: failure}, source: {ip: 203.0.113.5}}
+      - {"@timestamp": "2026-10-12T08:01:05Z", event: {action: ssh_login, outcome: failure}, source: {ip: 203.0.113.5}}
+      - {"@timestamp": "2026-10-12T08:01:40Z", event: {action: ssh_login, outcome: failure}, source: {ip: 203.0.113.5}}
+      - {"@timestamp": "2026-10-12T08:02:15Z", event: {action: ssh_login, outcome: failure}, source: {ip: 203.0.113.5}}
+  - name: failures from different sources are counted separately
+    expect: 0
+    events:
+      - {"@timestamp": "2026-10-12T08:00:00Z", event: {action: ssh_login, outcome: failure}, source: {ip: 203.0.113.1}}
+      - {"@timestamp": "2026-10-12T08:00:01Z", event: {action: ssh_login, outcome: failure}, source: {ip: 203.0.113.2}}
+      - {"@timestamp": "2026-10-12T08:00:02Z", event: {action: ssh_login, outcome: failure}, source: {ip: 203.0.113.3}}
+      - {"@timestamp": "2026-10-12T08:00:03Z", event: {action: ssh_login, outcome: failure}, source: {ip: 203.0.113.4}}
+      - {"@timestamp": "2026-10-12T08:00:04Z", event: {action: ssh_login, outcome: failure}, source: {ip: 203.0.113.5}}

@@ -1,0 +1,39 @@
+id: DF-LNX-004
+title: Interactive root shell via sudo
+status: stable
+description: >
+  A user ran an interactive shell as root through sudo. Admins normally run specific
+  commands; a full root shell after an unusual login is a common post-exploitation step.
+author: detectforge
+severity: high
+tags: [attack.privilege_escalation, attack.t1548.003]
+logsource: {product: linux, service: sudo}
+detection:
+  sudo_to_root:
+    event.action: sudo
+    event.outcome: success
+    user.target.name: root
+  shell:
+    - process.command_line|re: '^(/usr)?/bin/(ba|z|da|k|c|tc|fi)?sh(\s+-[il]+)?$'
+    - process.command_line|re: '^(/usr)?/bin/su(\s+-)?(\s+root)?$'
+    - process.command_line|contains: ['/bin/bash -i', 'python -c "import pty', "python3 -c 'import pty"]
+  condition: sudo_to_root and shell
+falsepositives:
+  - Break-glass administration; correlate with change tickets
+tests:
+  - name: sudo /bin/bash fires
+    expect: 1
+    events:
+      - {"@timestamp": "2026-10-12T08:11:30Z", event: {action: sudo, outcome: success}, user: {name: deploy, target: {name: root}}, process: {command_line: /bin/bash}}
+  - name: sudo su - fires
+    expect: 1
+    events:
+      - {"@timestamp": "2026-10-12T08:11:30Z", event: {action: sudo, outcome: success}, user: {name: deploy, target: {name: root}}, process: {command_line: /usr/bin/su -}}
+  - name: routine sudo command does not fire
+    expect: 0
+    events:
+      - {"@timestamp": "2026-10-12T08:02:10Z", event: {action: sudo, outcome: success}, user: {name: alice, target: {name: root}}, process: {command_line: /usr/bin/systemctl restart nginx}}
+  - name: shell as a non-root target does not fire
+    expect: 0
+    events:
+      - {"@timestamp": "2026-10-12T08:02:10Z", event: {action: sudo, outcome: success}, user: {name: alice, target: {name: www-data}}, process: {command_line: /bin/bash}}
