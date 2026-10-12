@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # detectforge
 
 **A detection-as-code engine for security logs.** You write detections as YAML rules in the Sigma style, version them in git, unit-test them in CI, and run them over Linux auth logs or JSON endpoint telemetry. Every alert is mapped to MITRE ATT&CK.
@@ -182,3 +183,6 @@ pytest --cov=detectforge
 ## License
 
 MIT. See [LICENSE](LICENSE).
+=======
+# detectforge
+>>>>>>> 8cc7964c2d635836d3baf3ac7870ee04d908b433
